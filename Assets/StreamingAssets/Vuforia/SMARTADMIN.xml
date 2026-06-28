@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QCARConfig>
+  <Tracking>
+    <ImageTarget name="mesa" size="100.000000 100.000000" />
+    <ImageTarget name="esandata" size="100.000000 100.000000" />
+    <ImageTarget name="finanzas" size="100.000000 100.000000" />
+    <ImageTarget name="bienestar" size="100.000000 100.000000" />
+    <ImageTarget name="sala" size="100.000000 100.000000" />
+    <ImageTarget name="servicios" size="100.000000 100.000000" />
+    <ImageTarget name="recepcion" size="100.000000 100.000000" />
+  </Tracking>
+</QCARConfig>
