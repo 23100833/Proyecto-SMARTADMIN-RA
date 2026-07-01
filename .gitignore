@@ -8,3 +8,4 @@
 *.csproj
 *.sln
 .DS_Store"Packages/*.tgz" 
+Packages/com.ptc.vuforia.engine-11.4.4.tgz
