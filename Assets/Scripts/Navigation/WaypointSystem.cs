@@ -1,110 +1,97 @@
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace SmartAdminRA.Navigation
 {
     public class WaypointSystem : MonoBehaviour
     {
         [Header("Configuración de Ruta")]
-        [SerializeField] private Transform[] waypoints;
-        [SerializeField] private Transform usuarioCamara;
-        [SerializeField] private float distanciaUmbral = 1.5f;
+        [Tooltip("Arrastra aquí tus 36 Image Targets en orden secuencial (001 al 036)")]
+        public List<Transform> waypoints = new List<Transform>();
+
+        [Tooltip("Arrastra aquí el objeto ARCamera de Vuforia")]
+        public Transform usuarioCamara;
+
+        [Tooltip("Distancia en metros para considerar que el usuario llegó al punto actual")]
+        public float distanciaUmbral = 1.5f;
 
         [Header("Elementos de Guía")]
-        [SerializeField] private GameObject flechaGuia;
+        [Tooltip("Arrastra aquí el objeto 3D de la flecha")]
+        public GameObject flechaGuia;
 
-        private int indiceWaypointActual;
+        [Tooltip("Arrastra aquí el Canvas o Panel UI emergente de la meta")]
+        public GameObject panelDestino;
 
-        private void Awake()
+        private int currentWaypointIndex = 0;
+        private int waypointMetaFinal = 34;
+        private bool navegacionActiva = false;
+
+        void Start()
         {
-            if (usuarioCamara == null)
-                Debug.LogWarning("[WaypointSystem] No se asignó la cámara del usuario.");
-
-            if (flechaGuia == null)
-                Debug.LogWarning("[WaypointSystem] No se asignó la flecha guía.");
-
-            if (waypoints == null || waypoints.Length == 0)
-                Debug.LogWarning("[WaypointSystem] No hay waypoints configurados.");
+            if (flechaGuia != null) flechaGuia.SetActive(false);
+            if (panelDestino != null) panelDestino.SetActive(false);
         }
 
-        private void OnEnable()
+        void Update()
         {
-            indiceWaypointActual = 0;
-
-            if (flechaGuia != null)
-                flechaGuia.SetActive(true);
-
-            if (waypoints != null && waypoints.Length > 0)
-                ActualizarPosicionFlecha();
-        }
-
-        private void Update()
-        {
-            if (!PuedeActualizar())
+            if (!navegacionActiva || usuarioCamara == null || waypoints.Count == 0 || flechaGuia == null)
                 return;
 
-            RevisarWaypoint();
-        }
-
-        private bool PuedeActualizar()
-        {
-            return usuarioCamara != null &&
-                   waypoints != null &&
-                   waypoints.Length > 0 &&
-                   indiceWaypointActual < waypoints.Length;
-        }
-
-        private void RevisarWaypoint()
-        {
-            Vector3 diferencia = usuarioCamara.position - waypoints[indiceWaypointActual].position;
-            diferencia.y = 0f;
-
-            float distancia = diferencia.magnitude;
-
-            if (distancia <= distanciaUmbral)
+            if (currentWaypointIndex > waypointMetaFinal)
             {
-                Debug.Log($"[WaypointSystem] Waypoint {indiceWaypointActual} alcanzado.");
+                TerminarNavegacion();
+                return;
+            }
 
-                indiceWaypointActual++;
+            Transform puntoObjetivo = waypoints[currentWaypointIndex];
 
-                if (indiceWaypointActual >= waypoints.Length)
+            if (puntoObjetivo != null)
+            {
+                Vector3 direccion = puntoObjetivo.position - usuarioCamara.position;
+
+                direccion.y = 0;
+
+                if (direccion.magnitude > 0.1f)
                 {
-                    FinalizarRuta();
+                    flechaGuia.transform.rotation = Quaternion.LookRotation(direccion);
                 }
-                else
+
+                float distanciaAlPunto = Vector3.Distance(usuarioCamara.position, puntoObjetivo.position);
+
+                if (distanciaAlPunto <= distanciaUmbral)
                 {
-                    ActualizarPosicionFlecha();
+                    currentWaypointIndex++;
+
+                    if (currentWaypointIndex > waypointMetaFinal)
+                    {
+                        TerminarNavegacion();
+                    }
                 }
             }
         }
 
-        private void ActualizarPosicionFlecha()
+        public void IniciarRutaHaciaDestino(int indexMeta)
         {
-            if (flechaGuia == null)
-                return;
-
-            Transform flecha = flechaGuia.transform;
-
-            flecha.position = waypoints[indiceWaypointActual].position;
-
-            if (indiceWaypointActual + 1 < waypoints.Length)
+            if (indexMeta < 0 || indexMeta >= waypoints.Count)
             {
-                Vector3 objetivo = waypoints[indiceWaypointActual + 1].position;
-                objetivo.y = flecha.position.y;
-
-                flecha.LookAt(objetivo);
+                Debug.LogError("[WaypointSystem] El índice de meta está fuera del rango de waypoints.");
+                return;
             }
+
+            currentWaypointIndex = 0;
+            waypointMetaFinal = indexMeta;
+            navegacionActiva = true;
+
+            if (flechaGuia != null) flechaGuia.SetActive(true);
+            if (panelDestino != null) panelDestino.SetActive(false);
         }
 
-        private void FinalizarRuta()
+        private void TerminarNavegacion()
         {
-            Debug.Log("[WaypointSystem] ¡Has llegado a la oficina de destino!");
-
-            if (flechaGuia != null)
-                flechaGuia.SetActive(false);
-
-            // Aquí podrá llamarse más adelante al sistema de gamificación.
-
-            enabled = false;
+            navegacionActiva = false;
+            if (flechaGuia != null) flechaGuia.SetActive(false);
+            if (panelDestino != null) panelDestino.SetActive(true);
         }
     }
 }
