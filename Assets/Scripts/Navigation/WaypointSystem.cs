@@ -1,110 +1,119 @@
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 
-namespace SmartAdminRA.Navigation
+public class WaypointSystem : MonoBehaviour
 {
-    public class WaypointSystem : MonoBehaviour
+    [Header("Configuración de Ruta")]
+    [Tooltip("Arrastra aquí tus 36 Image Targets en orden secuencial (001 al 036)")]
+    public List<Transform> waypoints = new List<Transform>();
+
+    [Tooltip("Arrastra aquí el objeto ARCamera de Vuforia")]
+    public Transform usuarioCamara;
+
+    [Tooltip("Distancia en metros para considerar que el usuario llegó al punto actual")]
+    public float distanciaUmbral = 1.5f;
+
+    [Header("Elementos de Guía")]
+    [Tooltip("Arrastra aquí el objeto 3D de la flecha")]
+    public GameObject flechaGuia;
+
+    [Tooltip("Arrastra aquí el Canvas o Panel UI emergente de la meta")]
+    public GameObject panelDestino;
+
+    // Variables de control de estado del software
+    private int currentWaypointIndex = 0;
+    private int waypointMetaFinal = 35; // Por defecto es el elemento 35 (Target 036)
+    private bool navegacionActiva = false;
+
+    void Start()
     {
-        [Header("Configuración de Ruta")]
-        [SerializeField] private Transform[] waypoints;
-        [SerializeField] private Transform usuarioCamara;
-        [SerializeField] private float distanciaUmbral = 1.5f;
+        // El sistema inicia apagado hasta que el usuario elija un destino en el menú
+        if (flechaGuia != null) flechaGuia.SetActive(false);
+        if (panelDestino != null) panelDestino.SetActive(false);
+    }
 
-        [Header("Elementos de Guía")]
-        [SerializeField] private GameObject flechaGuia;
+    void Update()
+    {
+        // Patrón de seguridad de software: abortar si la navegación no está activa o faltan componentes
+        if (!navegacionActiva || usuarioCamara == null || waypoints.Count == 0 || flechaGuia == null)
+            return;
 
-        private int indiceWaypointActual;
-
-        private void Awake()
+        // 1. Control del ciclo de vida de la ruta y detección de llegada a la meta
+        if (currentWaypointIndex > waypointMetaFinal)
         {
-            if (usuarioCamara == null)
-                Debug.LogWarning("[WaypointSystem] No se asignó la cámara del usuario.");
-
-            if (flechaGuia == null)
-                Debug.LogWarning("[WaypointSystem] No se asignó la flecha guía.");
-
-            if (waypoints == null || waypoints.Length == 0)
-                Debug.LogWarning("[WaypointSystem] No hay waypoints configurados.");
+            TerminarNavegacion();
+            return;
         }
 
-        private void OnEnable()
+        // 2. Obtener el Transform del objetivo actual
+        Transform puntoObjetivo = waypoints[currentWaypointIndex];
+
+        if (puntoObjetivo != null)
         {
-            indiceWaypointActual = 0;
+            // 3. Lógica matemática de vectores: Calcular dirección hacia el siguiente hito
+            Vector3 direccion = puntoObjetivo.position - usuarioCamara.position;
 
-            if (flechaGuia != null)
-                flechaGuia.SetActive(true);
+            // Mantener la flecha horizontal para evitar que apunte de forma extraña hacia arriba o abajo
+            direccion.y = 0;
 
-            if (waypoints != null && waypoints.Length > 0)
-                ActualizarPosicionFlecha();
-        }
-
-        private void Update()
-        {
-            if (!PuedeActualizar())
-                return;
-
-            RevisarWaypoint();
-        }
-
-        private bool PuedeActualizar()
-        {
-            return usuarioCamara != null &&
-                   waypoints != null &&
-                   waypoints.Length > 0 &&
-                   indiceWaypointActual < waypoints.Length;
-        }
-
-        private void RevisarWaypoint()
-        {
-            Vector3 diferencia = usuarioCamara.position - waypoints[indiceWaypointActual].position;
-            diferencia.y = 0f;
-
-            float distancia = diferencia.magnitude;
-
-            if (distancia <= distanciaUmbral)
+            if (direccion.magnitude > 0.1f)
             {
-                Debug.Log($"[WaypointSystem] Waypoint {indiceWaypointActual} alcanzado.");
+                // Rotar la flecha de forma suave usando Quaternions hacia el vector calculado
+                flechaGuia.transform.rotation = Quaternion.LookRotation(direccion);
+            }
 
-                indiceWaypointActual++;
+            // 4. Calcular distancia euclidiana en el espacio local de Vuforia
+            float distanciaAlPunto = Vector3.Distance(usuarioCamara.position, puntoObjetivo.position);
 
-                if (indiceWaypointActual >= waypoints.Length)
+            // Si el alumno entra en el rango de tolerancia (Umbral), avanzar de nodo
+            if (distanciaAlPunto <= distanciaUmbral)
+            {
+                currentWaypointIndex++;
+
+                // Si el incremento causó llegar al final del destino seleccionado
+                if (currentWaypointIndex > waypointMetaFinal)
                 {
-                    FinalizarRuta();
-                }
-                else
-                {
-                    ActualizarPosicionFlecha();
+                    TerminarNavegacion();
                 }
             }
         }
+    }
 
-        private void ActualizarPosicionFlecha()
+    /// <summary>
+    /// API Pública para conectar con los botones de tu Menú UI de ESAN.
+    /// </summary>
+    /// <param name="indexMeta">El índice del Target final (Ej: Comedor = 10, Bienestar = 27, EdificioA = 35)</param>
+    public void IniciarRutaHaciaDestino(int indexMeta)
+    {
+        // Validar límites del arreglo para evitar excepciones de tipo IndexOutOfRangeException
+        if (indexMeta < 0 || indexMeta >= waypoints.Count)
         {
-            if (flechaGuia == null)
-                return;
-
-            Transform flecha = flechaGuia.transform;
-
-            flecha.position = waypoints[indiceWaypointActual].position;
-
-            if (indiceWaypointActual + 1 < waypoints.Length)
-            {
-                Vector3 objetivo = waypoints[indiceWaypointActual + 1].position;
-                objetivo.y = flecha.position.y;
-
-                flecha.LookAt(objetivo);
-            }
+            Debug.LogError("Error en Sistemas: El índice de meta está fuera del rango del lote de fotos.");
+            return;
         }
 
-        private void FinalizarRuta()
-        {
-            Debug.Log("[WaypointSystem] ¡Has llegado a la oficina de destino!");
+        // Inicializar variables de estado
+        currentWaypointIndex = 0;
+        waypointMetaFinal = indexMeta;
+        navegacionActiva = true;
 
-            if (flechaGuia != null)
-                flechaGuia.SetActive(false);
+        // Control de visibilidad de componentes
+        if (flechaGuia != null) flechaGuia.SetActive(true);
+        if (panelDestino != null) panelDestino.SetActive(false);
 
-            // Aquí podrá llamarse más adelante al sistema de gamificación.
+        Debug.Log("Navegación inicializada de forma óptima hacia el nodo: " + indexMeta);
+    }
 
-            enabled = false;
-        }
+    /// <summary>
+    /// Encapsulamiento del proceso de parada y despliegue de interfaz de meta.
+    /// </summary>
+    private void TerminarNavegacion()
+    {
+        navegacionActiva = false;
+        if (flechaGuia != null) flechaGuia.SetActive(false);
+        if (panelDestino != null) panelDestino.SetActive(true); // Pop-up en pantalla activa
+
+        Debug.Log("Meta alcanzada con éxito. Desplegando Panel Informativo.");
     }
 }

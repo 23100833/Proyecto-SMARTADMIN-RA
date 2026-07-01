@@ -1,12 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <QCARConfig>
   <Tracking>
-    <ImageTarget name="mesa" size="100.000000 100.000000" />
-    <ImageTarget name="esandata" size="100.000000 100.000000" />
-    <ImageTarget name="finanzas" size="100.000000 100.000000" />
-    <ImageTarget name="bienestar" size="100.000000 100.000000" />
-    <ImageTarget name="sala" size="100.000000 100.000000" />
-    <ImageTarget name="servicios" size="100.000000 100.000000" />
-    <ImageTarget name="recepcion" size="100.000000 100.000000" />
+    <ImageTarget name="021_piso3_esandata" size="2.000000 2.666667" />
+    <ImageTarget name="036_camino_edificioa" size="5.000000 6.666667" />
+    <ImageTarget name="035_camino_jc_edificioa" size="5.000000 6.666667" />
+    <ImageTarget name="034_camino_jc" size="5.000000 6.666667" />
+    <ImageTarget name="033_camino_libreriasbs" size="5.000000 6.666667" />
+    <ImageTarget name="032_camino_finanzas" size="5.000000 6.666667" />
+    <ImageTarget name="031_camino_finanzas" size="5.000000 6.666667" />
+    <ImageTarget name="030_camino_finanzas" size="5.000000 6.666667" />
+    <ImageTarget name="029_camino_finanzas" size="5.000000 6.656949" />
+    <ImageTarget name="028_entrada_bienestarestudiantil" size="5.000000 6.666667" />
+    <ImageTarget name="027_entrada_bienestarestudiantil" size="5.000000 6.689896" />
+    <ImageTarget name="026_entrada_bienestarestudiantil" size="5.000000 6.666667" />
+    <ImageTarget name="025_entrada_bienestarestudiantil" size="5.000000 6.666667" />
+    <ImageTarget name="023_piso3_esandata" size="2.000000 2.666667" />
+    <ImageTarget name="022_entrada_ascensor" size="2.000000 2.666667" />
+    <ImageTarget name="020_entrada_ascensor" size="2.000000 2.666667" />
+    <ImageTarget name="019_entrada_ascensor" size="2.000000 2.666667" />
+    <ImageTarget name="018_entrada_ascensor" size="5.000000 6.693961" />
+    <ImageTarget name="017_camino_ssaa" size="5.000000 6.666667" />
+    <ImageTarget name="016_camino_edificioa" size="5.000000 6.666667" />
+    <ImageTarget name="015_camino_edificioa" size="5.000000 6.666667" />
+    <ImageTarget name="014_camino_derecha" size="5.000000 6.666667" />
+    <ImageTarget name="013_camino_derecha" size="5.000000 6.666667" />
+    <ImageTarget name="012_camino_derecha" size="5.000000 6.666667" />
+    <ImageTarget name="011_comedorcentral" size="5.000000 6.666667" />
+    <ImageTarget name="010_camino_comedor" size="5.000000 6.666667" />
+    <ImageTarget name="009_camino_comedor" size="5.000000 6.666667" />
+    <ImageTarget name="008_camino_comedor" size="5.000000 6.666667" />
+    <ImageTarget name="007_camino_comedor" size="5.000000 6.666667" />
+    <ImageTarget name="006_camino_bienestarestudiantil" size="5.000000 6.488971" />
+    <ImageTarget name="005_camino_bifurca" size="5.000000 6.666667" />
+    <ImageTarget name="004_camino_izquierda" size="5.000000 6.666667" />
+    <ImageTarget name="003_camino_ingreso" size="5.000000 6.666667" />
+    <ImageTarget name="002_camino_recepcion" size="5.000000 6.666667" />
+    <ImageTarget name="001_camino_ingreso" size="5.000000 6.666667" />
   </Tracking>
 </QCARConfig>

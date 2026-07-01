@@ -7,4 +7,6 @@
 [Uu]serSettings/
 *.csproj
 *.sln
-.DS_Store"Packages/*.tgz" 
+.DS_Store
+Packages/*.tgz
+.vs/
